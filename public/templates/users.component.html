@@ -1,0 +1,13 @@
+<h2>Personen</h2>
+<button (click)="newUser()">Neue Person</button>
+<ul class="users">
+  <li *ngFor="let user of users" [class.selected]="user === selectedUser" (click)="onSelect(user)">
+    {{user.name}}
+  </li>
+</ul>
+<div *ngIf="selectedUser">
+  <h2>
+    {{selectedUser.name | uppercase}}
+  </h2>
+  <button (click)="gotoDetail()">View Details</button>
+</div>

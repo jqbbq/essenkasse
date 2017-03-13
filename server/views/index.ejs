@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html ng-app="essenkasse">
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/css/bootstrap.min.css' />
+    <link rel='stylesheet' href='/css/bootstrap-theme.min.css' />
+    <link rel='stylesheet' href='/css/style.css' />
+    <script src="/js/jquery.min.js"></script>
+	<script src="/js/bootstrap/bootstrap.min.js"></script>
+	
+    <script src="/js/angular/angular.min.js"></script>
+    <script src="/js/angular/angular-animate.min.js"></script>
+    <script src="/js/angular/angular-route.min.js"></script>
+    <script src="/js/angular/angular-resource.min.js"></script>
+    <script src="/js/bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script src="/js/multiselect-tpls.js"></script>
+    <script src="/js/app.js"></script>
+  </head>
+  <body ng-controller="AppController" role="document">
+    <h1><%= title %></h1>
+
+    <div class="container-fluid">
+
+        <div class="row">
+
+            <div class="col-md-8">
+
+            	<div class="users panel panel-default" >
+            		<div class="panel-heading">Users</div>
+
+            		<table class="table table-bordered table-condensed table-striped">
+            			<thead>
+            				<tr>
+            					<th>User</th>
+            					<th>Credit</th>
+            				</tr>
+            			</thead>
+            			<tbody>
+            				<tr ng-repeat="user in users | orderBy:'_id'">
+            					<td><a href="#/{{$index}}">{{user._id}}</a></td>
+            					<td ng-class="{'bg-success': user.credit>=0, 'bg-danger': user.credit<0}">{{user.credit | number:2}} &euro;</td>
+            			</tbody>
+            		</table>
+            		<div class="panel-body form-inline">
+            			<div class="form-group">
+            				<button type="button" class="btn btn-default" ng-click="modal.open('user')">New User</button>
+            			</div>
+            		</div>
+            	</div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <div class="deposits panel panel-default" >
+                    <div class="panel-heading">Last Deposit</div>
+
+                    <table class="table table-bordered table-condensed table-striped">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="deposit in deposits | orderBy:'_id'">
+                                <td>{{deposit._id}}</td>
+                                <td>{{deposit.amount}} &euro;</td>
+                                <td>{{deposit.last | date:'dd.MM.yyyy'}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="panel-body">
+                        <button type="button" class="btn btn-default" ng-click="modal.open('deposit')">New Deposit</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+	<div class="meals panel panel-default">
+		<div class="panel-heading">Last Meals</div>
+
+		<table class="table table-bordered">
+			<thead>	
+				<tr>
+					<th>Meal</th>
+					<th>Price</th>
+					<th>Price/User</th>
+					<th>User</th>
+					<th>Date</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="meal in meals | orderBy:'-date'">
+					<td>{{meal.name}}</td>
+					<td>{{meal.price | number:2}} &euro;</td>
+					<td>{{meal.pricePerUser | number:2}} &euro;</td>
+					<td>
+						<span class="label label-default" ng-repeat="user in meal.users | orderBy:'user'">{{user}}</span>
+					</td>
+					<td>{{meal.date | date:'dd.MM.yyyy'}}</td>
+				</tr>
+			</tbody>
+		</table>
+		<div class="panel-body">
+            <button type="button" class="btn btn-default" ng-click="modal.open('meal')">New Meal</button>
+		</div>
+	</div>
+
+    <script type="text/ng-template" id="user-modal.html">
+        <form name="userForm" ng-submit="ok()" novalidate>
+            <div class="user-modal">
+                <div class="modal-header">
+                    <h3 class="modal-title">New User</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group has-feedback" ng-class="userForm.userName.$invalid?'has-error':'has-success'">
+                        <input type="text" autofocus class="form-control" ng-required="true" name="userName" ng-model="userName" placeholder="Name">
+                        <span class="glyphicon form-control-feedback" ng-class="userForm.userName.$invalid?'glyphicon-remove':'glyphicon-ok'" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" ng-disabled="userForm.$invalid" type="submit">OK</button>
+                    <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </script>
+
+    <script type="text/ng-template" id="meal-modal.html">
+        <form name="mealForm" ng-submit="ok()" novalidate>
+            <div class="meal-modal">
+                <div class="modal-header">
+                    <h3 class="modal-title">New Meal</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-row">
+                        <div class="form-group has-feedback" ng-class="mealForm.mealName.$invalid?'has-error':'has-success'">
+                            <input type="text" autofocus name="mealName" ng-model="mealName" class="form-control" placeholder="Meal" ng-required="true">
+                            <span class="glyphicon form-control-feedback" ng-class="mealForm.mealName.$invalid?'glyphicon-remove':'glyphicon-ok'" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="modal-row">
+                        <div class="form-group has-feedback" ng-class="mealForm.mealUsers.$invalid?'has-error':'has-success'">
+                            <am-multiselect class="input-lg" name="mealUsers" multiple="true" ms-selected ="There are {{mealUsers.length}} User(s) selected" ng-model="mealUsers" ng-required="true" ms-header="Select Users" options="u._id for u in users" change="selected()"></am-multiselect>
+                        </div>
+                    </div>
+                    <div class="modal-row">
+                        <div class="form-group has-feedback" ng-class="mealForm.mealPrice.$invalid?'has-error':'has-success'">
+                            <div class="input-group">
+                              <div class="input-group-addon">&euro;</div>
+                              <input type="text" ng-pattern="/^\d*(\.\d*)?$/" name="mealPrice" ng-model="mealPrice" ng-required="true" class="form-control" placeholder="Price">                              
+                            </div>
+                            <span class="glyphicon form-control-feedback" ng-class="mealForm.mealPrice.$invalid?'glyphicon-remove':'glyphicon-ok'" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="modal-row">
+                        <div class="form-group has-feedback" ng-class="mealForm.mealDate.$invalid?'has-error':'has-success'">                            
+                            <div class="input-group">
+                                <input type="text" class="form-control" uib-datepicker-popup="dd.MM.yyyy" placeholder="dd.MM.yyyy" name="mealDate" ng-model="mealDate" is-open="popup.opened" max-date="maxDate" datepicker-options="dateOptions" date-disabled="disabled(date, mode)" ng-required="true" close-text="Close" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" ng-click="open()"><i class="glyphicon glyphicon-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" ng-disabled="mealForm.$invalid" type="submit">OK</button>
+                    <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </script>
+
+    <script type="text/ng-template" id="deposit-modal.html">
+        <form name="depositForm" ng-submit="ok()" novalidate>
+            <div class="deposit-modal">
+                <div class="modal-header">
+                    <h3 class="modal-title">New Deposit</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-row">
+                        <div class="form-group has-feedback" ng-class="depositForm.depositUser.$invalid?'has-error':'has-success'">
+                            <select autofocus class="form-control" name="depositUser" ng-model="depositUser" ng-required="true">
+                                <option value="">-- User --</option>
+                                <option ng-repeat="user in users" value="{{user._id}}">{{user._id}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-row">
+                        <div class="form-group has-feedback" ng-class="depositForm.depositAmount.$invalid?'has-error':'has-success'">
+                            <div class="input-group">
+                              <div class="input-group-addon">&euro;</div>
+                              <input type="text" ng-required="true" ng-pattern="/^\d*(\.\d*)?$/" ng-model="depositAmount" name="depositAmount" class="form-control" placeholder="Amount">
+                            </div>
+                            <span class="glyphicon form-control-feedback" ng-class="depositForm.depositAmount.$invalid?'glyphicon-remove':'glyphicon-ok'" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" ng-disabled="depositForm.$invalid" type="submit">OK</button>
+                    <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </script>
+
+  </body>
+</html>
